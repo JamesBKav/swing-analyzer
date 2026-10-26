@@ -258,3 +258,18 @@ button, .btn, .seg, .tab, .scrubber, .stage, .chip, input, label {
   transition: opacity 0.2s, transform 0.2s;
 }
 .toast.show { opacity: 1; transform: none; }
+
+/* Pose panel */
+.row { display: flex; align-items: center; gap: 10px; }
+.row + .row { margin-top: 10px; }
+.row.small-gap { gap: 8px; }
+.grow { flex: 1; }
+.label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.small { font-size: 12px; }
+.segmented.compact .seg { min-height: 34px; font-size: 13px; }
+.btn.toggle.on { background: rgba(61, 220, 132, 0.16); border-color: var(--accent); color: var(--accent); }
+.progress { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; width: 0; background: var(--accent); transition: width 0.15s linear; }
+.run-box .row .muted { flex: 1; }
+.results:empty { display: none; }
+.results { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }

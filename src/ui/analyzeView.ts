@@ -4,10 +4,14 @@ import { VideoPlayer, detectFps } from '../player/player';
 import { createTransport } from '../player/transport';
 import { Stage } from './stage';
 import type { Session } from '../types';
+import { PosePanel } from './posePanel';
+import { poseAt, type PoseTrack } from '../pose/landmarks';
+import { drawSkeleton } from '../pose/skeleton';
 
 export interface AnalyzeCallbacks {
   onBack: () => void;
   onChange: (s: Session) => void;
+  onTrack?: (track: PoseTrack) => void;
 }
 
 type TabId = 'pose' | 'draw' | 'settings';
@@ -20,8 +24,11 @@ export class AnalyzeView {
   private tabBodies = new Map<TabId, HTMLElement>();
   private tabButtons = new Map<TabId, HTMLButtonElement>();
   private body: HTMLDivElement;
+  track: PoseTrack | null = null;
+  showSkeleton = true;
+  private posePanel: PosePanel;
 
-  constructor(public session: Session, private videoUrl: string, private cb: AnalyzeCallbacks, private isNew = false) {
+  constructor(public session: Session, readonly videoUrl: string, private cb: AnalyzeCallbacks, private isNew = false) {
     this.stage = new Stage(this.player);
     const transport = createTransport(this.player);
 
@@ -46,7 +53,13 @@ export class AnalyzeView {
       this.tabButtons.set(id, b);
       tabbar.append(b);
     }
-    this.tabBodies.set('pose', h('div', { class: 'muted pad' }, 'Pose analysis coming next.'));
+    this.posePanel = new PosePanel(this);
+    this.tabBodies.set('pose', this.posePanel.el);
+    this.stage.addLayer((ctx, rect, t) => {
+      if (!this.track || !this.showSkeleton) return;
+      const pose = poseAt(this.track, t);
+      if (pose) drawSkeleton(ctx, pose, rect, this.session.settings.handedness);
+    });
     this.tabBodies.set('draw', h('div', { class: 'muted pad' }, 'Drawing tools coming soon.'));
     this.tabBodies.set('settings', this.buildSettings());
 
@@ -83,6 +96,18 @@ export class AnalyzeView {
   showTab(id: TabId) {
     this.body.replaceChildren(this.tabBodies.get(id)!);
     this.tabButtons.forEach((b, k) => b.classList.toggle('on', k === id));
+  }
+
+  setTrack(track: PoseTrack) {
+    this.track = track;
+    this.session.poseFps = track.rate;
+    this.cb.onTrack?.(track);
+    this.save();
+    this.redraw();
+  }
+
+  redraw() {
+    this.stage.render();
   }
 
   save() {
@@ -128,6 +153,7 @@ export class AnalyzeView {
   }
 
   destroy() {
+    this.posePanel.destroy();
     this.player.destroy();
     this.stage.destroy();
   }

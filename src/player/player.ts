@@ -257,9 +257,11 @@ export class VideoPlayer extends EventTarget {
 /**
  * Seek a video and resolve once the new frame is actually ready to draw.
  * Safari can fire 'seeked' before the frame is decoded, so we also wait for
- * a presented frame where requestVideoFrameCallback exists.
+ * a presented frame where requestVideoFrameCallback exists. Pass
+ * waitForFrame=false for off-screen videos (rVFC never fires for them and
+ * drawImage after 'seeked' already returns the new frame).
  */
-export function seekVideo(video: HTMLVideoElement, t: number): Promise<void> {
+export function seekVideo(video: HTMLVideoElement, t: number, waitForFrame = true): Promise<void> {
   const v = video as VideoWithRVFC;
   return new Promise<void>((resolve) => {
     let done = false;
@@ -271,10 +273,10 @@ export function seekVideo(video: HTMLVideoElement, t: number): Promise<void> {
       resolve();
     };
     const onSeeked = () => {
-      if (v.requestVideoFrameCallback) {
+      if (waitForFrame && v.requestVideoFrameCallback) {
         v.requestVideoFrameCallback(() => finish());
-        // rVFC may not fire for a paused, hidden video; don't hang.
-        setTimeout(finish, 120);
+        // rVFC may not fire for a paused or off-screen video; don't hang.
+        setTimeout(finish, 80);
       } else {
         finish();
       }
