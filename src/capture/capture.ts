@@ -55,3 +55,29 @@ export async function captureThumbnail(video: HTMLVideoElement, maxSide = 240): 
   ctx.drawImage(video, 0, 0, c.width, c.height);
   return new Promise((r) => c.toBlob((b) => r(b), 'image/jpeg', 0.75));
 }
+
+/** Load a clip off-screen and grab a thumbnail from early in it. */
+export async function thumbnailFromUrl(url: string): Promise<Blob | null> {
+  const v = document.createElement('video');
+  v.muted = true;
+  v.playsInline = true;
+  v.preload = 'auto';
+  v.src = url;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      v.addEventListener('loadeddata', () => resolve(), { once: true });
+      v.addEventListener('error', () => reject(new Error('thumb')), { once: true });
+    });
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 2000); // never block the import on a slow seek
+      v.addEventListener('seeked', () => resolve(), { once: true });
+      v.currentTime = Math.min(0.3, (v.duration || 1) / 3);
+    });
+    return await captureThumbnail(v);
+  } catch {
+    return null;
+  } finally {
+    v.removeAttribute('src');
+    v.load();
+  }
+}

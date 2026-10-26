@@ -11,7 +11,7 @@ export default defineConfig({
   build: { target: 'es2022' },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['icons/*.png', 'favicon.svg'],
       manifest: {
