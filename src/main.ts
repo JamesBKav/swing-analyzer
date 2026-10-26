@@ -48,4 +48,15 @@ async function openFile(file: File) {
 showHome();
 
 // Dev-only hook so automated checks can open a generated clip without the file picker.
-if (import.meta.env.DEV) Object.assign(window, { __openFile: openFile, __current: () => current });
+if (import.meta.env.DEV) {
+  Object.assign(window, {
+    __openFile: openFile,
+    __current: () => current,
+    __compare: async (a: import('./ui/compareView').CompareInput, b: import('./ui/compareView').CompareInput) => {
+      const { CompareView } = await import('./ui/compareView');
+      const v = new CompareView(a, b, showHome);
+      show(v);
+      await v.init();
+    },
+  });
+}

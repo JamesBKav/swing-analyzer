@@ -345,3 +345,40 @@ button, .btn, .seg, .tab, .scrubber, .stage, .chip, input, label {
 .draw-panel .row { margin-top: 0; }
 .stage.drawing { outline: 2px solid rgba(61, 220, 132, 0.5); outline-offset: -2px; }
 .btn.square { width: 44px; padding: 0; }
+
+/* Compare */
+.cmp-stages { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 2px; background: #000; position: relative; touch-action: none; }
+.cmp-stages .stage { min-height: 0; flex: 1 1 0; }
+.cmp-stages.overlay .stage { position: absolute; inset: 0; }
+.cmp-stages.overlay .cmp-b { background: transparent; }
+.cmp-stages.overlay .cmp-b .stage-video { background: transparent; }
+@media (min-aspect-ratio: 1/1) {
+  .cmp-stages.side { flex-direction: row; }
+}
+.cmp-stages.side.cols { flex-direction: row; }
+.cmp-stages.cols .cmp-tag { font-size: 11px; max-width: 90%; }
+.cmp-stages.side.cols .cmp-tag.b { left: 8px; right: auto; }
+.stage.mirror .stage-video, .stage.mirror .stage-layer { transform: scaleX(-1); }
+.cmp-tag {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 2px 8px;
+  max-width: 70%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.cmp-tag.b { color: var(--blue); left: auto; right: 8px; }
+.cmp-stages.overlay .cmp-tag.b { top: 34px; right: auto; left: 8px; }
+.cmp-controls { display: flex; flex-direction: column; gap: 12px; }
+.cmp-controls .chips { margin-bottom: 0; }
+.cmp-controls .chip { min-height: 40px; }
+.slider { width: 100%; accent-color: var(--accent); height: 32px; }
+.compare .panel { max-height: 50dvh; }
