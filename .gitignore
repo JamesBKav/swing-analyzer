@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+# Copied from node_modules on install (see scripts/copy-mediapipe.mjs)
+public/mediapipe
+*.log
+.DS_Store
+coverage
