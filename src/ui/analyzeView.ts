@@ -10,6 +10,8 @@ import { drawHeadBox, drawSpine } from './overlays';
 import { poseAt, type PoseTrack } from '../pose/landmarks';
 import { drawSkeleton } from '../pose/skeleton';
 import type { SwingMetrics } from '../metrics/metrics';
+import { DrawController } from '../draw/controller';
+import { createDrawPanel } from './drawPanel';
 
 export interface AnalyzeCallbacks {
   onBack: () => void;
@@ -33,6 +35,7 @@ export class AnalyzeView {
   private body: HTMLDivElement;
   private posePanel: PosePanel;
   private results: ResultsPanel;
+  readonly draw: DrawController;
   private transport: ReturnType<typeof createTransport>;
   /** Extra tab content and teardown registered by feature modules (drawing). */
   private disposers: (() => void)[] = [];
@@ -66,7 +69,6 @@ export class AnalyzeView {
     this.results = new ResultsPanel(this);
     this.posePanel.results.append(this.results.el);
     this.tabBodies.set('pose', this.posePanel.el);
-    this.tabBodies.set('draw', h('div', { class: 'muted pad' }, 'Drawing tools coming soon.'));
     this.tabBodies.set('settings', this.buildSettings());
 
     // Overlay layers, bottom to top.
@@ -81,6 +83,9 @@ export class AnalyzeView {
     this.stage.addLayer((ctx, rect, t) => {
       if (this.overlays.spine && this.track) drawSpine(ctx, rect, this.track, this.session.phases, t);
     });
+    // Drawings sit on top of everything.
+    this.draw = new DrawController(this.stage, this.player, session.shapes, () => this.save());
+    this.tabBodies.set('draw', createDrawPanel(this.draw));
 
     this.el = h('div', { class: 'view analyze' }, topbar, this.stage.el, h('div', { class: 'panel' }, this.transport.el, this.body, tabbar));
     this.showTab('pose');
@@ -109,9 +114,10 @@ export class AnalyzeView {
   }
 
   showTab(id: TabId) {
+    // Leaving the Draw tab turns the tool off so the video gestures work again.
+    if (id !== 'draw' && this.draw?.tool !== 'none') this.draw?.setTool('none');
     this.body.replaceChildren(this.tabBodies.get(id)!);
     this.tabButtons.forEach((b, k) => b.classList.toggle('on', k === id));
-    this.el?.dispatchEvent(new CustomEvent('tabchange', { detail: id }));
   }
 
   /** Register a feature tab body (used by the drawing module). */
