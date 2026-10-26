@@ -48,4 +48,4 @@ async function openFile(file: File) {
 showHome();
 
 // Dev-only hook so automated checks can open a generated clip without the file picker.
-if (import.meta.env.DEV) (window as unknown as { __openFile: typeof openFile }).__openFile = openFile;
+if (import.meta.env.DEV) Object.assign(window, { __openFile: openFile, __current: () => current });
